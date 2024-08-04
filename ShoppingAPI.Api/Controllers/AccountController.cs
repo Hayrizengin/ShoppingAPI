@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using ShoppingAPI.Api.Aspects;
+using ShoppingAPI.Api.Validation.FluentValidation;
 using ShoppingAPI.Business.Abstract;
 using ShoppingAPI.Entity.DTO.Login;
 using ShoppingAPI.Entity.Result;
@@ -24,6 +26,7 @@ namespace ShoppingAPI.Api.Controllers
         }
 
         [HttpPost("/Login")]
+        [ValidationFilter(typeof(LoginValidator))]
         public async Task<IActionResult> LoginAsync(LoginRequestDTO loginRequestDTO)
         {
             var user = await _userService.GetAsync(q => q.UserName == loginRequestDTO.UserName && q.Password == loginRequestDTO.Password);

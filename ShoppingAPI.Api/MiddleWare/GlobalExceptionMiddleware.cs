@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 using ShoppingAPI.Entity.Result;
 using ShoppingAPI.Helper.CustomException;
 using System.Net;
@@ -34,7 +35,13 @@ namespace ShoppingAPI.Api.MiddleWare
                     await httpContext.Response.WriteAsJsonAsync(Sonuc<FieldValidationException>.FieldValidationError(HataBilgisi.FieldValidationError(errors)));
                 }
 
-                if (e.GetType()==typeof(TokenNotFoundException))
+                else if (e.GetType()==typeof(TokenNotFoundException))
+                {
+                    httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    httpContext.Response.ContentType = "application/json";
+                    await httpContext.Response.WriteAsJsonAsync(Sonuc<TokenNotFoundException>.TokenNotFound());
+                }
+                else if (e.GetType() == typeof(SecurityTokenSignatureKeyNotFoundException))
                 {
                     httpContext.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
                     httpContext.Response.ContentType = "application/json";

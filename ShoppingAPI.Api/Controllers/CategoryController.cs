@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using ShoppingAPI.Api.Aspects;
 using ShoppingAPI.Api.Validation.FluentValidation;
 using ShoppingAPI.Business.Abstract;
 using ShoppingAPI.Entity.DTO.Category;
@@ -24,33 +25,17 @@ namespace ShoppingAPI.Api.Controllers
         }
 
         [HttpPost("/AddCategory")]
+        [ValidationFilter(typeof(CategoryValidator))]
         public async Task<IActionResult> AddCategory(CategoryRequestDTO categoryDTORequest)
         {
-            CategoryValidator categoryValidator = new CategoryValidator();
+            Category category = _mapper.Map<Category>(categoryDTORequest);
 
+            await _categoryService.AddAsync(category);
 
-            if (categoryValidator.Validate(categoryDTORequest).IsValid) 
-            {
-                Category category = _mapper.Map<Category>(categoryDTORequest);
+            CategoryResponseDTO categoryResponseDTO = _mapper.Map<CategoryResponseDTO>(category);
 
-                await _categoryService.AddAsync(category);
+            return Ok(Sonuc<CategoryResponseDTO>.SuccessWithData(categoryResponseDTO));
 
-                CategoryResponseDTO categoryResponseDTO = _mapper.Map<CategoryResponseDTO>(category);
-
-                return Ok(Sonuc<CategoryResponseDTO>.SuccessWithData(categoryResponseDTO));
-            }
-            else
-            {
-                List<string>ValidationMessage = new List<string>();
-
-                for (int i = 0; i < categoryValidator.Validate(categoryDTORequest).Errors.Count; i++)
-                {
-                    ValidationMessage.Add(categoryValidator.Validate(categoryDTORequest).Errors[i].ErrorMessage);
-                }
-
-
-                throw new FieldValidationException(ValidationMessage);
-            }
         }
 
         [HttpGet("/Categories")]
